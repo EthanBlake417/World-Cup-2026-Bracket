@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import type { Picks, R32Teams, Results, Settings } from "./bracket";
+import { TEAMS_2026 } from "./teams2026";
 
 // Lazily-created Neon SQL client. Reads the connection string Vercel/Neon
 // injects (DATABASE_URL for the Neon integration, POSTGRES_URL for older
@@ -43,8 +44,9 @@ export async function ensureSchema(): Promise<void> {
       value JSONB NOT NULL
     );
   `;
-  // Seed default config rows only if missing.
-  await setConfigIfAbsent("r32_teams", emptyR32Teams());
+  // Seed default config rows only if missing. The R32 teams are pre-filled with
+  // the actual 2026 matchups; the admin can still edit them on /admin.
+  await setConfigIfAbsent("r32_teams", TEAMS_2026);
   await setConfigIfAbsent("results", {} as Results);
   await setConfigIfAbsent("settings", { locked: false } as Settings);
 }
