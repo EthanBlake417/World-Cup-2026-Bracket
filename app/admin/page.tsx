@@ -61,6 +61,7 @@ export default function AdminPage() {
   const [settings, setSettings] = useState<Settings>({ locked: false });
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [brackets, setBrackets] = useState<{ id: number; name: string; score: number }[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("wc2026-admin-pw");
@@ -74,7 +75,41 @@ export default function AdminPage() {
         setSettings(d.settings ?? { locked: false });
       })
       .catch(() => {});
+    refreshBrackets();
   }, []);
+
+  async function refreshBrackets() {
+    try {
+      const res = await fetch("/api/brackets");
+      const data = await res.json();
+      if (Array.isArray(data.brackets)) setBrackets(data.brackets);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async function deleteBracketById(id: number, name: string) {
+    if (!confirm(`Delete ${name}'s bracket? This can't be undone.`)) return;
+    setBusy(true);
+    setMsg(null);
+    try {
+      const res = await fetch(`/api/admin/brackets/${id}`, {
+        method: "DELETE",
+        headers: { "x-admin-password": password },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setMsg({ kind: "err", text: data.error ?? "Delete failed." });
+      } else {
+        setMsg({ kind: "ok", text: `Deleted ${name}'s bracket.` });
+        await refreshBrackets();
+      }
+    } catch {
+      setMsg({ kind: "err", text: "Network error." });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const r32Teams = useMemo(() => draftToTeams(draft), [draft]);
 
@@ -208,6 +243,57 @@ export default function AdminPage() {
             {settings.locked ? "Unlock submissions" : "Lock submissions"}
           </button>
         </div>
+      </section>
+
+      {/* Manage submitted brackets */}
+      <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div>
+            <h2 className="font-semibold">Submitted brackets</h2>
+            <p className="text-sm text-slate-500">
+              {brackets.length} total. Deleting a bracket is permanent.
+            </p>
+          </div>
+          <button
+            onClick={refreshBrackets}
+            disabled={busy}
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+          >
+            Refresh
+          </button>
+        </div>
+        {brackets.length > 0 ? (
+          <ul className="divide-y divide-slate-100">
+            {brackets.map((b) => (
+              <li key={b.id} className="flex items-center justify-between gap-3 py-2">
+                <span className="min-w-0 truncate font-medium">
+                  {b.name}{" "}
+                  <span className="text-xs font-normal text-slate-400">({b.score} pts)</span>
+                </span>
+                <div className="flex shrink-0 gap-2">
+                  <a
+                    href={`/bracket/${b.id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium hover:bg-slate-50"
+                  >
+                    View
+                  </a>
+                  <button
+                    onClick={() => deleteBracketById(b.id, b.name)}
+                    disabled={busy || !password}
+                    className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+                    title={!password ? "Enter the admin password first" : "Delete this bracket"}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-slate-500">No brackets submitted yet.</p>
+        )}
       </section>
 
       {/* R32 teams */}

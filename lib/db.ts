@@ -139,3 +139,10 @@ export async function getBracket(id: number): Promise<BracketRow | null> {
   `) as BracketRow[];
   return rows[0] ?? null;
 }
+
+export async function deleteBracket(id: number): Promise<boolean> {
+  const rows = (await db()`
+    DELETE FROM brackets WHERE id = ${id} RETURNING id;
+  `) as { id: number }[];
+  return rows.length > 0;
+}
