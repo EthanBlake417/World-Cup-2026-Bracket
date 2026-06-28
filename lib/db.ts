@@ -1,4 +1,5 @@
 import { neon } from "@neondatabase/serverless";
+import { unstable_noStore as noStore } from "next/cache";
 import type { Picks, R32Teams, Results, Settings } from "./bracket";
 import { TEAMS_2026 } from "./teams2026";
 
@@ -54,6 +55,7 @@ export async function ensureSchema(): Promise<void> {
 // ---- config ----------------------------------------------------------------
 
 async function getConfig<T>(key: string, fallback: T): Promise<T> {
+  noStore(); // always read live data, never a cached render
   const rows = (await db()`SELECT value FROM config WHERE key = ${key} LIMIT 1;`) as {
     value: T;
   }[];
@@ -118,6 +120,7 @@ export async function createBracket(name: string, picks: Picks): Promise<number>
 }
 
 export async function listBrackets(): Promise<BracketRow[]> {
+  noStore(); // always read live data, never a cached render
   const rows = (await db()`
     SELECT id, name, picks, created_at
     FROM brackets
@@ -127,6 +130,7 @@ export async function listBrackets(): Promise<BracketRow[]> {
 }
 
 export async function getBracket(id: number): Promise<BracketRow | null> {
+  noStore(); // always read live data, never a cached render
   const rows = (await db()`
     SELECT id, name, picks, created_at
     FROM brackets
