@@ -57,7 +57,9 @@ export default async function ViewBracketPage({ params }: { params: { id: string
         </div>
       ) : (
         <p className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-3 text-sm text-slate-500">
-          No results entered yet — once matches are played, correct picks turn{" "}
+          Your picks show in{" "}
+          <span className="font-semibold text-blue-700">blue</span>. Once matches are
+          played, correct picks turn{" "}
           <span className="font-semibold text-green-700">green</span> and wrong ones turn{" "}
           <span className="font-semibold text-red-700">red</span>.
         </p>
