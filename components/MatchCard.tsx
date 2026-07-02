@@ -74,10 +74,10 @@ function Slot({
   if (mode === "view" && isPicked && actual) {
     stateClass =
       picked === actual
-        ? "bg-green-600 text-white" // correct = green fill
-        : "bg-red-600 text-white"; // incorrect = red fill
+        ? "bg-emerald-600 text-white" // correct = green fill
+        : "bg-rose-600 text-white"; // incorrect = red fill
   } else if (isPicked) {
-    stateClass = "bg-blue-600 text-white"; // prediction = blue fill
+    stateClass = "bg-sky-600 text-white"; // prediction = blue fill
   }
 
   const clickable = mode === "build" && !!team && !disabled;
@@ -96,7 +96,7 @@ function Slot({
       <button
         type="button"
         onClick={() => team && onPick?.(team.name)}
-        className={`block w-full px-2 py-1.5 text-left transition hover:bg-blue-50 ${stateClass}`}
+        className={`block w-full px-2 py-1.5 text-left transition hover:bg-sky-50 ${stateClass}`}
       >
         {content}
       </button>
