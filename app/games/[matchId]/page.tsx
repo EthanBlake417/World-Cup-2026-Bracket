@@ -40,14 +40,16 @@ export default async function GameDetailPage({
     );
   }
 
-  // Human title: fixed matchup for R32, generic round + index otherwise.
+  // Human title: the real teams once official results decide the matchup,
+  // otherwise a generic round + index label. `results` shares the same shape
+  // as a bracket's picks, so resolving it yields the official teams.
   const indexInRound = matchesInRound(match.round).findIndex(
     (m) => m.id === match.id,
   );
-  const seed = r32Teams[match.id];
+  const official = resolveTeams(results, r32Teams)[match.id];
   const title =
-    match.round === "R32" && seed
-      ? `${seed.a?.name ?? "TBD"} vs ${seed.b?.name ?? "TBD"}`
+    official && (official.a || official.b)
+      ? `${official.a?.name ?? "TBD"} vs ${official.b?.name ?? "TBD"}`
       : `${ROUND_LABELS[match.round]} — Match ${indexInRound + 1}`;
 
   const actual = results[match.id];

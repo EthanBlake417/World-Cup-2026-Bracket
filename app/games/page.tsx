@@ -1,21 +1,30 @@
 import Link from "next/link";
 import Flag from "@/components/Flag";
-import { getR32Teams } from "@/lib/db";
-import { matchesInRound, ROUND_LABELS, ROUND_ORDER } from "@/lib/bracket";
+import { getR32Teams, getResults } from "@/lib/db";
+import {
+  matchesInRound,
+  resolveTeams,
+  ROUND_LABELS,
+  ROUND_ORDER,
+} from "@/lib/bracket";
 
 export const dynamic = "force-dynamic";
 
 export default async function GamesPage() {
-  let r32Teams: Awaited<ReturnType<typeof getR32Teams>> | null = null;
+  let official: ReturnType<typeof resolveTeams> | null = null;
   let dbError = false;
 
   try {
-    r32Teams = await getR32Teams();
+    const [r32Teams, results] = await Promise.all([getR32Teams(), getResults()]);
+    // Resolve the real teams sitting in every match from the official results
+    // (results share the same shape as a bracket's picks). Later-round slots
+    // fill in as the admin enters the winners that feed them.
+    official = resolveTeams(results, r32Teams);
   } catch {
     dbError = true;
   }
 
-  if (dbError || !r32Teams) {
+  if (dbError || !official) {
     return (
       <div className="rounded-lg border border-amber-300 bg-amber-50 p-5 text-amber-900">
         Database isn&apos;t ready yet. See the{" "}
@@ -27,7 +36,7 @@ export default async function GamesPage() {
     );
   }
 
-  const teams = r32Teams;
+  const teams = official;
 
   return (
     <div className="space-y-6">
@@ -46,13 +55,16 @@ export default async function GamesPage() {
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {matchesInRound(round).map((m, i) => {
               const slot = teams[m.id];
+              // Show the real teams once at least one is known; otherwise a
+              // generic label until upstream results decide the matchup.
+              const known = slot && (slot.a || slot.b);
               return (
                 <Link
                   key={m.id}
                   href={`/games/${m.id}`}
                   className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm shadow-sm transition hover:border-pitch hover:bg-emerald-50"
                 >
-                  {round === "R32" && slot ? (
+                  {known ? (
                     <span className="flex min-w-0 flex-col gap-1">
                       <span className="flex items-center gap-1.5">
                         <Flag code={slot.a?.code} />
