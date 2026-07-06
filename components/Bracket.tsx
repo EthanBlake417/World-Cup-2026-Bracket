@@ -42,6 +42,7 @@ export default function Bracket({ r32Teams, picks, mode, results, onPick }: Prop
                   picked={picks[m.id]}
                   actual={results?.[m.id]}
                   mode={mode}
+                  href={mode === "view" ? `/games/${m.id}` : undefined}
                   onPick={(name) => onPick?.(m.id, name)}
                 />
               ))}
@@ -61,6 +62,7 @@ export default function Bracket({ r32Teams, picks, mode, results, onPick }: Prop
           picked={picks["M32"]}
           actual={results?.["M32"]}
           mode={mode}
+          href={mode === "view" ? "/games/M32" : undefined}
           onPick={(name) => onPick?.("M32", name)}
         />
       </div>

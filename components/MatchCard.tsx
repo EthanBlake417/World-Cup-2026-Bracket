@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Flag from "./Flag";
 import type { Team } from "@/lib/bracket";
 
@@ -11,6 +12,7 @@ type Props = {
   actual?: string; // official winner name (view mode)
   mode: "build" | "view";
   disabled?: boolean;
+  href?: string; // when set, the whole card links here (e.g. its /games page)
   onPick?: (name: string) => void;
 };
 
@@ -22,10 +24,15 @@ export default function MatchCard({
   actual,
   mode,
   disabled,
+  href,
   onPick,
 }: Props) {
-  return (
-    <div className="w-44 rounded-md border border-slate-300 bg-white shadow-sm">
+  const card = (
+    <div
+      className={`w-44 rounded-md border border-slate-300 bg-white shadow-sm ${
+        href ? "transition hover:border-pitch hover:shadow-md" : ""
+      }`}
+    >
       {label ? (
         <div className="border-b border-slate-200 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-400">
           {label}
@@ -50,6 +57,16 @@ export default function MatchCard({
       />
     </div>
   );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        {card}
+      </Link>
+    );
+  }
+
+  return card;
 }
 
 function Slot({
