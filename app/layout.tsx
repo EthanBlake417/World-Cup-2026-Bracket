@@ -24,6 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/leaderboard" className="hover:underline">
                 Leaderboard
               </Link>
+              <Link href="/games" className="hover:underline">
+                Games
+              </Link>
               <Link
                 href="/bracket/new"
                 className="rounded bg-white px-3 py-1.5 font-semibold text-pitch hover:bg-emerald-50"
